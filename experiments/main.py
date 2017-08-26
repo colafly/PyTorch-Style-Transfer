@@ -17,6 +17,15 @@ from torch.optim import Adam
 from myutils import utils
 from myutils.vgg16 import Vgg16 
 from option import Options
+from tinyenv.flags import flags
+from os import listdir
+
+FLAGS = flags()
+
+z = ZipFile(FLAGS.dataset +  '2014val.zip')
+z.extractall(FLAGS.dataset)
+print(listdir(FLAGS.dataset))
+
 
 def main():
 	"""
