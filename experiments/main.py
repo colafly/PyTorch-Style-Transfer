@@ -17,6 +17,7 @@ from torch.optim import Adam
 from myutils import utils
 from myutils.vgg16 import Vgg16 
 from option import Options
+from zipfile import ZipFile
 from tinyenv.flags import flags
 from os import listdir
 
