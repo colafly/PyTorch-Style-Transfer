@@ -23,7 +23,7 @@ from os import listdir
 
 FLAGS = flags()
 
-z = ZipFile(FLAGS.dataset +  '2014val.zip')
+z = ZipFile(FLAGS.dataset +  '2014train.zip')
 z.extractall(FLAGS.dataset)
 print(listdir(FLAGS.dataset))
 
