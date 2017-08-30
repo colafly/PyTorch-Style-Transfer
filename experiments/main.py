@@ -65,8 +65,8 @@ def main():
 	# 	# Gatys et al. using optimization-based approach
 	# 	optimize(args)
 
-	else:
-		raise ValueError('Unknow experiment type')
+	# else:
+	#	raise ValueError('Unknow experiment type')
 
 
 def optimize(args):
