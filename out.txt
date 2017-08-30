@@ -1,0 +1,274 @@
+diff --git a/experiments/main.py b/experiments/main.py
+index 2a34264..eb8aac9 100644
+--- a/experiments/main.py
++++ b/experiments/main.py
+@@ -5,7 +5,7 @@
+ ## Copyright (c) 2017
+ ##
+ ## This source code is licensed under the MIT-style license found in the
+-## LICENSE file in the root directory of this source tree 
++## LICENSE file in the root directory of this source tree
+ ##+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 
+ import os
+@@ -15,14 +15,14 @@ from torch.autograd import Variable
+ from torch.optim import Adam
+ 
+ from myutils import utils
+-from myutils.vgg16 import Vgg16 
++from myutils.vgg16 import Vgg16
+ from option import Options
+ 
+ def main():
+ 	"""
+ 	For extending the package:
+ 		1. Extending a new network type:
+-			1). define your own file under the folder 'net/' 
++			1). define your own file under the folder 'net/'
+ 			2). implement your own nn.Module in mynn.py if need
+ 			3). implement train and evaluate functions base on your need
+ 			4). set up the import in the follows
+@@ -33,30 +33,28 @@ def main():
+ 	"""
+ 	# figure out the experiments type
+ 	args = Options().parse()
+-	if args.subcommand is None:
+-		raise ValueError("ERROR: specify the experiment type")
+ 	if args.cuda and not torch.cuda.is_available():
+ 		raise ValueError("ERROR: cuda is not available, try running on CPU")
+ 
+ 	# set the net-type
+ 	if args.net_type == "v1":
+-		from net import msg_net_v1 as exp	
++		from net import msg_net_v1 as exp
+ 	elif args.net_type == "v2":
+-		from net import msg_net_v2 as exp	
++		from net import msg_net_v2 as exp
+ 	else:
+ 		raise ValueError('Unknow net-type')
+ 
+-	if args.subcommand == "train":
+-		# Training the model 
+-		exp.train(args)
++	# if args.subcommand == "train":
++		# Training the model
++	exp.train(args)
+ 
+-	elif args.subcommand == 'eval':
+-		# Test the pre-trained model
+-		exp.evaluate(args)
+-
+-	elif args.subcommand == 'optim':
+-		# Gatys et al. using optimization-based approach
+-		optimize(args)
++	# elif args.subcommand == 'eval':
++	# 	# Test the pre-trained model
++	# 	exp.evaluate(args)
++	#
++	# elif args.subcommand == 'optim':
++	# 	# Gatys et al. using optimization-based approach
++	# 	optimize(args)
+ 
+ 	else:
+ 		raise ValueError('Unknow experiment type')
+@@ -72,7 +70,7 @@ def optimize(args):
+ 	content_image = Variable(utils.preprocess_batch(content_image), requires_grad=False)
+ 	content_image = utils.subtract_imagenet_mean_batch(content_image)
+ 	style_image = utils.tensor_load_rgbimage(args.style_image, size=args.style_size)
+-	style_image = style_image.unsqueeze(0)	
++	style_image = style_image.unsqueeze(0)
+ 	style_image = Variable(utils.preprocess_batch(style_image), requires_grad=False)
+ 	style_image = utils.subtract_imagenet_mean_batch(style_image)
+ 
+@@ -110,9 +108,9 @@ def optimize(args):
+ 		if (e + 1) % args.log_interval == 0:
+ 			print(total_loss.data.cpu().numpy()[0])
+ 		total_loss.backward()
+-		
++
+ 		optimizer.step()
+-	# save the image	
++	# save the image
+ 	output = utils.add_imagenet_mean_batch(output)
+ 	utils.tensor_save_bgrimage(output.data[0], args.output_image, args.cuda)
+ 
+diff --git a/experiments/option.py b/experiments/option.py
+index 777ffcf..ac898d7 100644
+--- a/experiments/option.py
++++ b/experiments/option.py
+@@ -4,11 +4,11 @@ import os
+ class Options():
+ 	def __init__(self):
+ 		self.parser = argparse.ArgumentParser(description="parser for PyTorch-Style-Transfer")
+-		subparsers = self.parser.add_subparsers(title="subcommands", dest="subcommand")
++		# subparsers = self.parser.add_subparsers(title="subcommands", dest="subcommand")
+ 
+ 		# training args
+-		train_arg = subparsers.add_parser("train",
+-									help="parser for training arguments")
++		# train_arg = subparsers.add_parser("train",
++		# 							help="parser for training arguments")
+ 		train_arg.add_argument("--net-type", type=str, default="v2",
+ 								help="type of the network, default is v2")
+ 		train_arg.add_argument("--ngf", type=int, default=128,
+@@ -30,9 +30,9 @@ class Options():
+ 								help="size of training images, default is 256 X 256")
+ 		train_arg.add_argument("--style-size", type=int, default=512,
+ 								help="size of style-image, default is the original size of style image")
+-		train_arg.add_argument("--cuda", type=int, default=1, 
++		train_arg.add_argument("--cuda", type=int, default=1,
+ 								help="set it to 1 for running on GPU, 0 for CPU")
+-		train_arg.add_argument("--seed", type=int, default=42, 
++		train_arg.add_argument("--seed", type=int, default=42,
+ 								help="random seed for training")
+ 		train_arg.add_argument("--content-weight", type=float, default=1.0,
+ 								help="weight for content-loss, default is 1.0")
+@@ -45,77 +45,77 @@ class Options():
+ 		train_arg.add_argument("--resume", type=str, default=None,
+ 								help="resume if needed")
+ 
+-		# optim args (Gatys CVPR 2016)
+-		optim_arg = subparsers.add_parser("optim",
+-									help="parser for optimization arguments")
+-		optim_arg.add_argument("--net-type", type=str, default="v2",
+-								help="type of the network, default is v2")
+-		optim_arg.add_argument("--iters", type=int, default=500,
+-								help="number of training iterations, default is 500")
+-		optim_arg.add_argument("--content-image", type=str, default="images/content/venice-boat.jpg",
+-								help="path to content image you want to stylize")
+-		optim_arg.add_argument("--style-image", type=str, default="images/9styles/candy.jpg",
+-								help="path to style-image")
+-		optim_arg.add_argument("--content-size", type=int, default=512,
+-								help="factor for scaling down the content image")
+-		optim_arg.add_argument("--style-size", type=int, default=512,
+-								help="size of style-image, default is the original size of style image")
+-		optim_arg.add_argument("--output-image", type=str, default="output.jpg",
+-								help="path for saving the output image")
+-		optim_arg.add_argument("--vgg-model-dir", type=str, default="models/",
+-								help="directory for vgg, if model is not present in the directory it is downloaded")
+-		optim_arg.add_argument("--cuda", type=int, default=1, 
+-								help="set it to 1 for running on GPU, 0 for CPU")
+-		optim_arg.add_argument("--content-weight", type=float, default=1.0,
+-								help="weight for content-loss, default is 1.0")
+-		optim_arg.add_argument("--style-weight", type=float, default=5.0,
+-								help="weight for style-loss, default is 5.0")
+-		optim_arg.add_argument("--lr", type=float, default=1e1,
+-								help="learning rate, default is 0.001")
+-		optim_arg.add_argument("--log-interval", type=int, default=50,
+-								help="number of images after which the training loss is logged, default is 50")	
+-
+-		# evaluation args
+-		eval_arg = subparsers.add_parser("eval", help="parser for evaluation/stylizing arguments")
+-		eval_arg.add_argument("--net-type", type=str, default="v2",
+-help="type of the network, default is v2")
+-		eval_arg.add_argument("--ngf", type=int, default=128,
+-								help="number of generator filter channels, default 128")
+-		eval_arg.add_argument("--content-image", type=str, required=True,
+-								help="path to content image you want to stylize")
+-		eval_arg.add_argument("--style-image", type=str, default="images/9styles/candy.jpg",
+-								help="path to style-image")
+-		eval_arg.add_argument("--content-size", type=int, default=512,
+-								help="factor for scaling down the content image")
+-		eval_arg.add_argument("--style-size", type=int, default=512,
+-								help="size of style-image, default is the original size of style image")
+-		eval_arg.add_argument("--style-folder", type=str, default="images/9styles/",
+-								help="path to style-folder")
+-		eval_arg.add_argument("--output-image", type=str, default="output.jpg",
+-								help="path for saving the output image")
+-		eval_arg.add_argument("--model", type=str, required=True,
+-								help="saved model to be used for stylizing the image")
+-		eval_arg.add_argument("--cuda", type=int, default=1,
+-								help="set it to 1 for running on GPU, 0 for CPU")	
+-		eval_arg.add_argument("--vgg-model-dir", type=str, default="models/",
+-								help="directory for vgg, if model is not present in the directory it is downloaded")
+-
+-		# demo
+-		demo_arg = subparsers.add_parser("demo", help="parser for evaluation/stylizing arguments")
+-		demo_arg.add_argument("--style-folder", type=str, default="images/9styles/",
+-								help="path to style-folder")
+-		demo_arg.add_argument("--style-size", type=int, default=512,
+-								help="size of style-image, default is the original size of style image")
+-		demo_arg.add_argument("--cuda", type=int, default=1, 
+-								help="set it to 1 for running on GPU, 0 for CPU")
+-		demo_arg.add_argument("--record", type=int, default=0, 
+-								help="set it to 1 for recording into video file")
+-		demo_arg.add_argument("--model", type=str, required=True,
+-								help="saved model to be used for stylizing the image")
+-		demo_arg.add_argument("--ngf", type=int, default=128,
+-								help="number of generator filter channels, default 128")
+-		demo_arg.add_argument("--demo-size", type=int, default=480,
+-								help="demo window height, default 480")
++# 		# optim args (Gatys CVPR 2016)
++# 		optim_arg = subparsers.add_parser("optim",
++# 									help="parser for optimization arguments")
++# 		optim_arg.add_argument("--net-type", type=str, default="v2",
++# 								help="type of the network, default is v2")
++# 		optim_arg.add_argument("--iters", type=int, default=500,
++# 								help="number of training iterations, default is 500")
++# 		optim_arg.add_argument("--content-image", type=str, default="images/content/venice-boat.jpg",
++# 								help="path to content image you want to stylize")
++# 		optim_arg.add_argument("--style-image", type=str, default="images/9styles/candy.jpg",
++# 								help="path to style-image")
++# 		optim_arg.add_argument("--content-size", type=int, default=512,
++# 								help="factor for scaling down the content image")
++# 		optim_arg.add_argument("--style-size", type=int, default=512,
++# 								help="size of style-image, default is the original size of style image")
++# 		optim_arg.add_argument("--output-image", type=str, default="output.jpg",
++# 								help="path for saving the output image")
++# 		optim_arg.add_argument("--vgg-model-dir", type=str, default="models/",
++# 								help="directory for vgg, if model is not present in the directory it is downloaded")
++# 		optim_arg.add_argument("--cuda", type=int, default=1,
++# 								help="set it to 1 for running on GPU, 0 for CPU")
++# 		optim_arg.add_argument("--content-weight", type=float, default=1.0,
++# 								help="weight for content-loss, default is 1.0")
++# 		optim_arg.add_argument("--style-weight", type=float, default=5.0,
++# 								help="weight for style-loss, default is 5.0")
++# 		optim_arg.add_argument("--lr", type=float, default=1e1,
++# 								help="learning rate, default is 0.001")
++# 		optim_arg.add_argument("--log-interval", type=int, default=50,
++# 								help="number of images after which the training loss is logged, default is 50")
++#
++# 		# evaluation args
++# 		eval_arg = subparsers.add_parser("eval", help="parser for evaluation/stylizing arguments")
++# 		eval_arg.add_argument("--net-type", type=str, default="v2",
++# help="type of the network, default is v2")
++# 		eval_arg.add_argument("--ngf", type=int, default=128,
++# 								help="number of generator filter channels, default 128")
++# 		eval_arg.add_argument("--content-image", type=str, required=True,
++# 								help="path to content image you want to stylize")
++# 		eval_arg.add_argument("--style-image", type=str, default="images/9styles/candy.jpg",
++# 								help="path to style-image")
++# 		eval_arg.add_argument("--content-size", type=int, default=512,
++# 								help="factor for scaling down the content image")
++# 		eval_arg.add_argument("--style-size", type=int, default=512,
++# 								help="size of style-image, default is the original size of style image")
++# 		eval_arg.add_argument("--style-folder", type=str, default="images/9styles/",
++# 								help="path to style-folder")
++# 		eval_arg.add_argument("--output-image", type=str, default="output.jpg",
++# 								help="path for saving the output image")
++# 		eval_arg.add_argument("--model", type=str, required=True,
++# 								help="saved model to be used for stylizing the image")
++# 		eval_arg.add_argument("--cuda", type=int, default=1,
++# 								help="set it to 1 for running on GPU, 0 for CPU")
++# 		eval_arg.add_argument("--vgg-model-dir", type=str, default="models/",
++# 								help="directory for vgg, if model is not present in the directory it is downloaded")
++#
++# 		# demo
++# 		demo_arg = subparsers.add_parser("demo", help="parser for evaluation/stylizing arguments")
++# 		demo_arg.add_argument("--style-folder", type=str, default="images/9styles/",
++# 								help="path to style-folder")
++# 		demo_arg.add_argument("--style-size", type=int, default=512,
++# 								help="size of style-image, default is the original size of style image")
++# 		demo_arg.add_argument("--cuda", type=int, default=1,
++# 								help="set it to 1 for running on GPU, 0 for CPU")
++# 		demo_arg.add_argument("--record", type=int, default=0,
++# 								help="set it to 1 for recording into video file")
++# 		demo_arg.add_argument("--model", type=str, required=True,
++# 								help="saved model to be used for stylizing the image")
++# 		demo_arg.add_argument("--ngf", type=int, default=128,
++# 								help="number of generator filter channels, default 128")
++# 		demo_arg.add_argument("--demo-size", type=int, default=480,
++# 								help="demo window height, default 480")
+ 
+ 	def parse(self):
+ 		return self.parser.parse_args()

@@ -5,7 +5,7 @@
 ## Copyright (c) 2017
 ##
 ## This source code is licensed under the MIT-style license found in the
-## LICENSE file in the root directory of this source tree 
+## LICENSE file in the root directory of this source tree
 ##+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 import os
@@ -15,7 +15,7 @@ from torch.autograd import Variable
 from torch.optim import Adam
 
 from myutils import utils
-from myutils.vgg16 import Vgg16 
+from myutils.vgg16 import Vgg16
 from option import Options
 from zipfile import ZipFile
 from tinyenv.flags import flags
@@ -27,12 +27,11 @@ z = ZipFile(FLAGS.dataset +  '2014train.zip')
 z.extractall(FLAGS.dataset)
 print(listdir(FLAGS.dataset))
 
-
 def main():
 	"""
 	For extending the package:
 		1. Extending a new network type:
-			1). define your own file under the folder 'net/' 
+			1). define your own file under the folder 'net/'
 			2). implement your own nn.Module in mynn.py if need
 			3). implement train and evaluate functions base on your need
 			4). set up the import in the follows
@@ -43,30 +42,28 @@ def main():
 	"""
 	# figure out the experiments type
 	args = Options().parse()
-	if args.subcommand is None:
-		raise ValueError("ERROR: specify the experiment type")
 	if args.cuda and not torch.cuda.is_available():
 		raise ValueError("ERROR: cuda is not available, try running on CPU")
 
 	# set the net-type
 	if args.net_type == "v1":
-		from net import msg_net_v1 as exp	
+		from net import msg_net_v1 as exp
 	elif args.net_type == "v2":
-		from net import msg_net_v2 as exp	
+		from net import msg_net_v2 as exp
 	else:
 		raise ValueError('Unknow net-type')
 
-	if args.subcommand == "train":
-		# Training the model 
-		exp.train(args)
+	# if args.subcommand == "train":
+		# Training the model
+	exp.train(args)
 
-	elif args.subcommand == 'eval':
-		# Test the pre-trained model
-		exp.evaluate(args)
-
-	elif args.subcommand == 'optim':
-		# Gatys et al. using optimization-based approach
-		optimize(args)
+	# elif args.subcommand == 'eval':
+	# 	# Test the pre-trained model
+	# 	exp.evaluate(args)
+	#
+	# elif args.subcommand == 'optim':
+	# 	# Gatys et al. using optimization-based approach
+	# 	optimize(args)
 
 	else:
 		raise ValueError('Unknow experiment type')
@@ -82,7 +79,7 @@ def optimize(args):
 	content_image = Variable(utils.preprocess_batch(content_image), requires_grad=False)
 	content_image = utils.subtract_imagenet_mean_batch(content_image)
 	style_image = utils.tensor_load_rgbimage(args.style_image, size=args.style_size)
-	style_image = style_image.unsqueeze(0)	
+	style_image = style_image.unsqueeze(0)
 	style_image = Variable(utils.preprocess_batch(style_image), requires_grad=False)
 	style_image = utils.subtract_imagenet_mean_batch(style_image)
 
@@ -120,9 +117,9 @@ def optimize(args):
 		if (e + 1) % args.log_interval == 0:
 			print(total_loss.data.cpu().numpy()[0])
 		total_loss.backward()
-		
+
 		optimizer.step()
-	# save the image	
+	# save the image
 	output = utils.add_imagenet_mean_batch(output)
 	utils.tensor_save_bgrimage(output.data[0], args.output_image, args.cuda)
 
