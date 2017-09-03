@@ -27,6 +27,11 @@ z = ZipFile(FLAGS.dataset +  '2014train.zip')
 z.extractall(FLAGS.dataset)
 print(listdir(FLAGS.dataset))
 
+
+z = ZipFile(FLAGS.styles-folders +  '3styles.zip')
+z.extractall(FLAGS.styles-folders)
+print(listdir(FLAGS.styles-folders))
+
 def main():
 	"""
 	For extending the package:

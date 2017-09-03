@@ -2,3 +2,6 @@
 *.swp
 *.pyc
 *.pth
+env/
+experiments/env/
+experiments/models/
