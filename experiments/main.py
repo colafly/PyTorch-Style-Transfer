@@ -29,6 +29,7 @@ print(listdir(FLAGS.dataset))
 
 z = ZipFile(FLAGS.style_folder +  '3styles.zip')
 z.extractall(FLAGS.style_folder)
+os.remove(FLAGS.style_folder +  '3styles.zip')
 print(listdir(FLAGS.style_folder))
 
 def main():
