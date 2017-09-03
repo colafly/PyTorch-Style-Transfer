@@ -20,7 +20,7 @@ class Options():
 		self.parser.add_argument("--dataset", type=str, default="dataset/",
 								help="path to training dataset, the path should point to a folder "
 								"containing another folder with all the training images")
-		self.parser.add_argument("--style-folder", type=str, default="images/9styles/",
+		self.parser.add_argument("--style_folder", type=str, default="images/9styles/",
 								help="path to style-folder")
 		self.parser.add_argument("--vgg-model-dir", type=str, default="models/",
 								help="directory for vgg, if model is not present in the directory it is downloaded")
